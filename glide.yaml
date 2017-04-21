@@ -1,0 +1,4 @@
+package: github.com/kamichidu/ws-proxy
+import:
+- package: github.com/gorilla/websocket
+  version: ~1.1.0
