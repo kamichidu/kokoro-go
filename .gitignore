@@ -1,2 +1,4 @@
 /vendor/
 /.glide/
+/*.exe
+/kokoro-go
