@@ -127,6 +127,11 @@ func (self *kokoro) WriteJSON(v interface{}) error {
 func (self *kokoro) TranslateToREST(msg *requestMessage) (interface{}, *errorObject, error) {
 	client := new(http.Client)
 
+	requestMethod := strings.ToUpper(msg.Params.Type)
+	if requestMethod == "" {
+		requestMethod = http.MethodGet
+	}
+
 	requestUrl, err := url.ParseRequestURI(msg.Params.Url)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Can't parse request url: %s", err)
@@ -138,7 +143,7 @@ func (self *kokoro) TranslateToREST(msg *requestMessage) (interface{}, *errorObj
 		requestUrl.Host = self.Host
 	}
 	var requestBody io.Reader
-	if strings.ToUpper(msg.Params.Type) == "POST" {
+	if requestMethod == "POST" {
 		data, err := json.Marshal(msg.Params.Data)
 		if err != nil {
 			return nil, nil, fmt.Errorf("Can't create request payload: %s", err)
@@ -152,7 +157,7 @@ func (self *kokoro) TranslateToREST(msg *requestMessage) (interface{}, *errorObj
 		}
 	}
 
-	req, err := http.NewRequest(msg.Params.Type, requestUrl.String(), requestBody)
+	req, err := http.NewRequest(requestMethod, requestUrl.String(), requestBody)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Can't create REST API Request: %s", err)
 	}
