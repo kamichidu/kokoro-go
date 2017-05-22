@@ -54,6 +54,11 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 	flags.BoolVar(&config.Insecure, "k", false, "Use insecure connection")
 	flags.StringVar(&config.LogLevel, "l", "info", "Log `LEVEL`")
 	flags.StringVar(&config.LogFile, "f", "-", "Log `FILE`")
+	flags.Usage = func() {
+		fmt.Fprintf(errOut, "Usage of %s:\n\n", filepath.Base(args[0]))
+		fmt.Fprintf(errOut, "  %s [{options}...] {access token}\n\n", filepath.Base(args[0]))
+		flags.PrintDefaults()
+	}
 	if err := flags.Parse(args[1:]); err != nil {
 		fmt.Fprintf(errOut, "Can't parse arguments: %s\n", err)
 		return 128
