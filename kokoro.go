@@ -64,7 +64,7 @@ type errorObject struct {
 func (self *kokoro) Start(c context.Context, r io.Reader) error {
 	errCh := make(chan error, 1)
 	go func() {
-		if err := self.StartWS(c); err != nil {
+		if err := self.startWS(c); err != nil {
 			self.Logger.Errorf("WebSocket start failed: %s", err)
 		}
 	}()
@@ -73,7 +73,11 @@ func (self *kokoro) Start(c context.Context, r io.Reader) error {
 		for {
 			line, _, err := r.ReadLine()
 			if err != nil {
-				errCh <- err
+				if err == io.EOF {
+					errCh <- nil
+				} else {
+					errCh <- err
+				}
 				break
 			}
 			msg := new(requestMessage)
@@ -126,7 +130,7 @@ func (self *kokoro) Start(c context.Context, r io.Reader) error {
 	}
 }
 
-func (self *kokoro) StartWS(c context.Context) error {
+func (self *kokoro) startWS(c context.Context) error {
 	errCh := make(chan error, 1)
 	go func() {
 		wsEndpoint := new(url.URL)
@@ -139,7 +143,18 @@ func (self *kokoro) StartWS(c context.Context) error {
 		wsEndpoint.Path = "/cable"
 
 		self.Logger.Infof("Connecting to %s", wsEndpoint.String())
-		if conn, _, err := websocket.DefaultDialer.Dial(wsEndpoint.String(), nil); err != nil {
+		wsHeader := make(http.Header)
+		wsHeader.Set("X-Access-Token", self.AccessToken)
+		if conn, wsResp, err := websocket.DefaultDialer.Dial(wsEndpoint.String(), wsHeader); err != nil {
+			if wsResp != nil {
+				defer wsResp.Body.Close()
+				self.Logger.Errorf("WS Response: %v - %v", wsResp.StatusCode, wsResp.Status)
+				for k, v := range wsResp.Header {
+					self.Logger.Errorf("WS Response Header: %v: %v", k, v)
+				}
+				body, _ := ioutil.ReadAll(wsResp.Body)
+				self.Logger.Errorf("WS Response: %v", string(body))
+			}
 			errCh <- fmt.Errorf("Can't upgrade websocket connection: %s", err)
 			return
 		} else {
