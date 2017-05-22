@@ -8,6 +8,9 @@ type appConfig struct {
 	// Use http instead of https, and ws of wss
 	Insecure bool
 
+	// Access token
+	AccessToken string
+
 	// The level for log
 	LogLevel string
 

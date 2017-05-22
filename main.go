@@ -64,6 +64,12 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 		return 0
 	}
 
+	config.AccessToken = flags.Arg(0)
+	if config.AccessToken == "" {
+		flags.Usage()
+		return 128
+	}
+
 	// init logger
 	logger := log.StandardLogger()
 	logger.Formatter = &log.TextFormatter{}
@@ -89,18 +95,14 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 		logger.Level = lvl
 	}
 
-	scheme := "https"
-	if config.Insecure {
-		scheme = "http"
-	}
-
 	// build app
 	app := &kokoro{
-		mutex:  new(sync.Mutex),
-		w:      out,
-		Scheme: scheme,
-		Host:   config.Host,
-		Logger: logger,
+		mutex:       new(sync.Mutex),
+		w:           out,
+		Insecure:    config.Insecure,
+		Host:        config.Host,
+		AccessToken: config.AccessToken,
+		Logger:      logger,
 	}
 	if err := app.Start(context.Background(), in); err != nil {
 		logger.Errorf("Error: %s", err)

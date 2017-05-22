@@ -6,6 +6,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,8 +15,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type kokoro struct {
@@ -22,9 +22,13 @@ type kokoro struct {
 
 	w io.Writer
 
-	Scheme string
+	Insecure bool
 
 	Host string
+
+	wsConn *websocket.Conn
+
+	AccessToken string
 
 	Logger *log.Logger
 }
@@ -59,6 +63,11 @@ type errorObject struct {
 
 func (self *kokoro) Start(c context.Context, r io.Reader) error {
 	errCh := make(chan error, 1)
+	go func() {
+		if err := self.StartWS(c); err != nil {
+			self.Logger.Errorf("WebSocket start failed: %s", err)
+		}
+	}()
 	go func(r *bufio.Reader) {
 		// read line as jsonlines
 		for {
@@ -117,6 +126,53 @@ func (self *kokoro) Start(c context.Context, r io.Reader) error {
 	}
 }
 
+func (self *kokoro) StartWS(c context.Context) error {
+	errCh := make(chan error, 1)
+	go func() {
+		wsEndpoint := new(url.URL)
+		if self.Insecure {
+			wsEndpoint.Scheme = "ws"
+		} else {
+			wsEndpoint.Scheme = "wss"
+		}
+		wsEndpoint.Host = self.Host
+		wsEndpoint.Path = "/cable"
+
+		self.Logger.Infof("Connecting to %s", wsEndpoint.String())
+		if conn, _, err := websocket.DefaultDialer.Dial(wsEndpoint.String(), nil); err != nil {
+			errCh <- fmt.Errorf("Can't upgrade websocket connection: %s", err)
+			return
+		} else {
+			defer conn.Close()
+			self.wsConn = conn
+		}
+
+		for {
+			mt, r, err := self.wsConn.NextReader()
+			if err != nil {
+				errCh <- err
+				break
+			}
+			if mt != websocket.TextMessage {
+				self.Logger.Infof("Non text message frame, ignored")
+				continue
+			}
+			b, err := ioutil.ReadAll(r)
+			if err != nil {
+				self.Logger.Errorf("Can't read websocket: %s", err)
+				continue
+			}
+			self.Logger.Infof("websocket = %v", string(b))
+		}
+	}()
+	select {
+	case <-c.Done():
+		return c.Err()
+	case err := <-errCh:
+		return err
+	}
+}
+
 func (self *kokoro) WriteJSON(v interface{}) error {
 	self.mutex.Lock()
 	defer self.mutex.Unlock()
@@ -137,7 +193,11 @@ func (self *kokoro) TranslateToREST(msg *requestMessage) (interface{}, *errorObj
 		return nil, nil, fmt.Errorf("Can't parse request url: %s", err)
 	}
 	if requestUrl.Scheme == "" {
-		requestUrl.Scheme = self.Scheme
+		if self.Insecure {
+			requestUrl.Scheme = "http"
+		} else {
+			requestUrl.Scheme = "https"
+		}
 	}
 	if requestUrl.Host == "" {
 		requestUrl.Host = self.Host
@@ -166,6 +226,7 @@ func (self *kokoro) TranslateToREST(msg *requestMessage) (interface{}, *errorObj
 			req.Header.Set(k, v)
 		}
 	}
+	req.Header.Set("X-Access-Token", self.AccessToken)
 
 	client.Timeout = msg.Params.Timeout
 	resp, err := client.Do(req)
