@@ -1,18 +1,13 @@
-ws-proxy
+kokoro-go
 ========================================================================================================================
-ws-proxy is just a proxy for websocket protocol.
-This is similar to wscat (nodejs app), but can only use as websocket client.
+[kokoro-io](https://github.com/supermomonga/kokoro-io) REST API or WebSocket API client for cli tools.
 
 How to Install
 ------------------------------------------------------------------------------------------------------------------------
 ```
-go get -u -v github.com/kamichidu/ws-proxy
+go get -u -v github.com/kamichidu/kokoro-go
 ```
 
 How to Use
 ------------------------------------------------------------------------------------------------------------------------
-```
-$ ws-proxy -h
-$ ws-proxy -v
-$ ws-proxy -u ws://localhost
-```
+TBD
