@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type kokoro struct {
@@ -21,7 +22,9 @@ type kokoro struct {
 
 	w io.Writer
 
-	BaseUrl string
+	Scheme string
+
+	Host string
 
 	Logger *log.Logger
 }
@@ -127,6 +130,12 @@ func (self *kokoro) TranslateToREST(msg *requestMessage) (interface{}, *errorObj
 	requestUrl, err := url.ParseRequestURI(msg.Params.Url)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Can't parse request url: %s", err)
+	}
+	if requestUrl.Scheme == "" {
+		requestUrl.Scheme = self.Scheme
+	}
+	if requestUrl.Host == "" {
+		requestUrl.Host = self.Host
 	}
 	var requestBody io.Reader
 	if strings.ToUpper(msg.Params.Type) == "POST" {

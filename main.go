@@ -89,10 +89,17 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 		logger.Level = lvl
 	}
 
+	scheme := "https"
+	if config.Insecure {
+		scheme = "http"
+	}
+
 	// build app
 	app := &kokoro{
 		mutex:  new(sync.Mutex),
 		w:      out,
+		Scheme: scheme,
+		Host:   config.Host,
 		Logger: logger,
 	}
 	if err := app.Start(context.Background(), in); err != nil {
