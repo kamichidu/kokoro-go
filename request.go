@@ -48,6 +48,7 @@ func (self *cmdReq) Action(c *cli.Context) error {
 		return err
 	}
 	req.Header.Set("X-Access-Token", config.Token)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
