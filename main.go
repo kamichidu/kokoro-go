@@ -42,6 +42,10 @@ func initLogger(c *cli.Context) error {
 	return nil
 }
 
+const (
+	metaReader = "reader"
+)
+
 func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 	// init global logger
 	logger := log.StandardLogger()
@@ -49,6 +53,9 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 	logger.Out = errOut
 
 	app := cli.NewApp()
+	app.Metadata = map[string]interface{}{
+		metaReader: in,
+	}
 	app.Writer = out
 	app.ErrWriter = errOut
 	app.Name = "kokoro-go"
