@@ -6,8 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +14,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 )
 
 type kokoro struct {

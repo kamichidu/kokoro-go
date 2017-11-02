@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jmespath/go-jmespath"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/urfave/cli.v1"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/jmespath/go-jmespath"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/urfave/cli.v1"
 )
 
 type cmdReq struct{}

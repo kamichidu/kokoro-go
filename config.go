@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/urfave/cli.v1"
 	"io"
 	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/urfave/cli.v1"
 )
 
 var defaultConfigFilename string
