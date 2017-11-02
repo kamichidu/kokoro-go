@@ -1,8 +1,10 @@
-hash: 4ce1c256b84bbb77f6349d1fbd57d52431be191d5e8e5ae91b12e614673117de
-updated: 2017-11-02T10:55:19.9112934+09:00
+hash: 3ad3f862799caf10fa88fca7d0c0ca65dece34475e975bb79a0d2f63752e4a90
+updated: 2017-11-02T19:45:55.2574072+09:00
 imports:
 - name: github.com/gorilla/websocket
   version: a91eba7f97777409bc2c443f5534d41dd20c5720
+- name: github.com/jmespath/go-jmespath
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/sirupsen/logrus
   version: 85b1699d505667d13f8ac4478c1debbf85d6c5de
 - name: golang.org/x/sys

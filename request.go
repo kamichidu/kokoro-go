@@ -1,14 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/jmespath/go-jmespath"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/urfave/cli.v1"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strings"
 )
 
 type cmdReq struct{}
@@ -62,51 +63,66 @@ func (self *cmdReq) Action(c *cli.Context) error {
 		return nil
 	}
 
-	// print response payload
-	_, err = io.Copy(c.App.Writer, resp.Body)
-	if err != nil {
-		return err
-	}
-
 	// exit code depends on http response status code
 	// - 2xx   => 0
 	// - other => same to status code
 	// 2xx => 0
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil
+		return self.printResponse(c.App.Writer, resp, c.String("query"))
 	} else {
+		io.Copy(c.App.Writer, resp.Body)
 		return cli.NewExitError(resp.Status, resp.StatusCode)
 	}
 }
 
-func (self *cmdReq) createUrl(c *cli.Context) (*url.URL, error) {
-	scheme := "https"
-	if c.GlobalBool("insecure") {
-		scheme = "http"
+func (self *cmdReq) printResponse(w io.Writer, resp *http.Response, query string) error {
+	if query == "" {
+		log.Debug("no jmespath expr, just copy it")
+		_, err := io.Copy(w, resp.Body)
+		return err
 	}
-	host := c.GlobalString("host")
+
+	log.Debugf("jmespath expr (%s), apply it", query)
+	buf := json.RawMessage{}
+	if err := json.NewDecoder(resp.Body).Decode(&buf); err != nil {
+		return err
+	}
+	var data interface{}
+	if len(buf) == 0 {
+		data = nil
+	} else {
+		switch rune(buf[0]) {
+		case '[':
+			data = []interface{}{}
+		default:
+			data = map[string]interface{}{}
+		}
+		if err := json.Unmarshal(buf, &data); err != nil {
+			return err
+		}
+	}
+
+	v, err := jmespath.Search(query, data)
+	if err != nil {
+		return err
+	}
+	return json.NewEncoder(w).Encode(v)
+}
+
+func (self *cmdReq) createUrl(c *cli.Context) (*url.URL, error) {
 	uriPath := c.Args().First()
 	if uriPath == "" {
 		return nil, cli.NewExitError("{uriPath} must be specified", 128)
 	}
-
-	u := &url.URL{
-		Scheme: scheme,
-		Host:   host,
-		Path:   uriPath,
+	u, err := url.ParseRequestURI(uriPath)
+	if err != nil {
+		return nil, cli.NewExitError("not a valid {uriPath}", 128)
 	}
-	if queries := c.StringSlice("query"); queries != nil {
-		q := u.Query()
-		for _, query := range queries {
-			kv := strings.SplitN(query, "=", 2)
-			if len(kv) == 1 {
-				q.Add(kv[0], "")
-			} else {
-				q.Add(kv[0], kv[1])
-			}
-		}
-		u.RawQuery = q.Encode()
+	u.Scheme = "https"
+	if c.GlobalBool("insecure") {
+		u.Scheme = "http"
 	}
+	u.Host = c.GlobalString("host")
 	return u, nil
 }
 
@@ -116,8 +132,9 @@ func init() {
 		return cli.Command{
 			Name: name,
 			Flags: []cli.Flag{
-				&cli.StringSliceFlag{
-					Name: "query",
+				&cli.StringFlag{
+					Name:  "query",
+					Usage: "JMESPath query string. See http://jmespath.org/ for more information and examples.",
 				},
 			},
 			Action: cmd.Action,
