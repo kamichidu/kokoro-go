@@ -10,6 +10,8 @@ import (
 	"gopkg.in/urfave/cli.v1"
 )
 
+const appName = "kokoro-go"
+
 var appVersion string
 
 var commands = []cli.Command{}
@@ -58,7 +60,7 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 	}
 	app.Writer = out
 	app.ErrWriter = errOut
-	app.Name = "kokoro-go"
+	app.Name = appName
 	app.Version = appVersion
 	app.Commands = commands
 	app.Before = initLogger
@@ -66,14 +68,26 @@ func run(in io.Reader, out io.Writer, errOut io.Writer, args []string) int {
 		&cli.StringFlag{
 			Name:  "loglevel",
 			Value: "info",
+			Usage: "Log threshold level (Possible values: debug, info, warn, error, fatal, panic)",
 		},
 		&cli.StringFlag{
 			Name:  "logfile",
 			Value: "-",
+			Usage: "Write log messages to `PATH`",
 		},
 		&cli.StringFlag{
 			Name:  "c",
 			Value: defaultConfigFilename,
+			Usage: "Config file `PATH`",
+		},
+		&cli.BoolFlag{
+			Name:  "insecure",
+			Usage: "Use http/ws instead of https/wss",
+		},
+		&cli.StringFlag{
+			Name:  "host",
+			Value: "kokoro.io",
+			Usage: "kokoro.io hostname",
 		},
 	}
 	if err := app.Run(args); err != nil {

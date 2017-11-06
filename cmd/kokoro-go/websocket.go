@@ -138,11 +138,11 @@ func (self *cmdWS) loop(w io.Writer, ws *websocket.Conn, channelIds []string) er
 
 func (self *cmdWS) createUrl(c *cli.Context) *url.URL {
 	u := &url.URL{
-		Host: c.String("host"),
+		Host: c.GlobalString("host"),
 		Path: c.String("path"),
 	}
 	u.Scheme = "wss"
-	if c.Bool("insecure") {
+	if c.GlobalBool("insecure") {
 		u.Scheme = "ws"
 	}
 	return u
@@ -153,13 +153,6 @@ func init() {
 	commands = append(commands, cli.Command{
 		Name: "websocket",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name: "insecure",
-			},
-			&cli.StringFlag{
-				Name:  "host",
-				Value: "kokoro.io",
-			},
 			&cli.StringFlag{
 				Name:  "path",
 				Value: "/cable",

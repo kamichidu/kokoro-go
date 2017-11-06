@@ -32,12 +32,12 @@ func (self *cmdLogin) Action(c *cli.Context) (err error) {
 	}
 
 	var baseUrl string
-	if c.Bool("insecure") {
+	if c.GlobalBool("insecure") {
 		baseUrl += "http://"
 	} else {
 		baseUrl += "https://"
 	}
-	baseUrl += c.String("host")
+	baseUrl += c.GlobalString("host")
 
 	device, err := kokoro.NewClient(baseUrl).RegisterDevice(email, password, &types.Device{
 		Name:             c.String("device-name"),
@@ -83,14 +83,6 @@ func init() {
 		Name:  "login",
 		Usage: "Logging in to kokoro.io",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "insecure",
-				Usage: "Use http instead of https",
-			},
-			&cli.StringFlag{
-				Name:  "host",
-				Value: "kokoro.io",
-			},
 			&cli.StringFlag{
 				Name:  "device-name",
 				Value: defaultDeviceName,

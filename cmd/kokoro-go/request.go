@@ -152,13 +152,6 @@ func init() {
 		Name: "request",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name: "insecure",
-			},
-			&cli.StringFlag{
-				Name:  "host",
-				Value: "kokoro.io",
-			},
-			&cli.BoolFlag{
 				Name: "debug",
 			},
 		},
