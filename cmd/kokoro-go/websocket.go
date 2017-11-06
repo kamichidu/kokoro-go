@@ -156,9 +156,11 @@ func init() {
 			&cli.StringFlag{
 				Name:  "path",
 				Value: "/cable",
+				Usage: "ActionCable endpoint path",
 			},
 			&cli.BoolFlag{
-				Name: "debug",
+				Name:  "debug",
+				Usage: "Dump HTTP Response",
 			},
 		},
 		Action: cmd.Action,

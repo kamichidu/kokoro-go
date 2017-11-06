@@ -152,7 +152,8 @@ func init() {
 		Name: "request",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name: "debug",
+				Name:  "debug",
+				Usage: "Dump HTTP Response",
 			},
 		},
 		Subcommands: cli.Commands{
