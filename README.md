@@ -20,3 +20,11 @@ $ kokoro-go request get /api/v1/channels --query '[].id'
 # Subscribe events for specific channels
 $ kokoro-go websocket {channelId1} {channelId2}
 ```
+
+About go tags
+------------------------------------------------------------------------------------------------------------------------
+supported go tags are below:
+
+| tag        | description                                               |
+| ---        | ---                                                       |
+| more\_test | go test runs requires kokoro.io account (email, password) |
