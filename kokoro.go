@@ -123,7 +123,40 @@ func (self *Client) RegisterDevice(email string, password string, v *types.Devic
 	return retval, json.NewDecoder(resp.Body).Decode(retval)
 }
 
+func (self *Client) doJson(method string, relativePath string, reqval interface{}, retval interface{}) error {
+	u, err := makeRequestUrl(self.BaseUrl, relativePath)
+	if err != nil {
+		return fmt.Errorf("kokoro-go: %s", err)
+	}
+	body, err := makeJsonBody(reqval)
+	if err != nil {
+		return fmt.Errorf("kokoro-go: %s", err)
+	}
+	req, err := http.NewRequest(method, u.String(), body)
+	if err != nil {
+		return fmt.Errorf("kokoro-go: %s", err)
+	}
+
+	resp, err := self.Do(req)
+	if err != nil {
+		return fmt.Errorf("kokoro-go: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if err := reportErrorResponse(resp); err != nil {
+		return fmt.Errorf("kokoro-go: %s", err)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(retval); err != nil {
+		return fmt.Errorf("kokoro-go: %s", err)
+	}
+	return nil
+}
+
 func makeJsonBody(v interface{}) (io.Reader, error) {
+	if v == nil {
+		return nil, nil
+	}
 	rw := new(bytes.Buffer)
 	return rw, json.NewEncoder(rw).Encode(v)
 }

@@ -11,4 +11,5 @@ debug: build
 .PHONY: deps
 deps:
 	go get -v github.com/Masterminds/glide
+	go get -v github.com/jteeuwen/go-bindata/...
 	glide install
