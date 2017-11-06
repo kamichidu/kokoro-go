@@ -5,7 +5,7 @@ kokoro-go
 How to Install
 ------------------------------------------------------------------------------------------------------------------------
 ```
-go get -u -v github.com/kamichidu/kokoro-go
+go get -u -v github.com/kamichidu/kokoro-go/...
 ```
 
 How to Use
