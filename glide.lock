@@ -1,5 +1,5 @@
-hash: 3ad3f862799caf10fa88fca7d0c0ca65dece34475e975bb79a0d2f63752e4a90
-updated: 2017-11-02T19:45:55.2574072+09:00
+hash: 1633f2e10f279232c227b4462984741949dd583d7bbc35eb310fd727beba3b48
+updated: 2017-11-06T13:48:10.2169484+09:00
 imports:
 - name: github.com/gorilla/websocket
   version: a91eba7f97777409bc2c443f5534d41dd20c5720
@@ -7,10 +7,15 @@ imports:
   version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/sirupsen/logrus
   version: 85b1699d505667d13f8ac4478c1debbf85d6c5de
+- name: golang.org/x/crypto
+  version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
+  subpackages:
+  - ssh/terminal
 - name: golang.org/x/sys
-  version: e48874b42435b4347fc52bdee0424a52abc974d7
+  version: 8eb05f94d449fdf134ec24630ce69ada5b469c1c
   subpackages:
   - unix
+  - windows
 - name: gopkg.in/urfave/cli.v1
   version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
 testImports: []
